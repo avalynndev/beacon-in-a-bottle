@@ -59,10 +59,5 @@ export const siteConfig = {
       title: "Sign Up",
       description: "Join Beacon in a Bottle.",
     },
-
-    signOut: {
-      title: "Sign Out",
-      description: "You've signed out.",
-    },
   },
 };

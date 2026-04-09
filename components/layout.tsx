@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Menu, UserIcon, X, Plus } from "lucide-react";
+import { Menu, X, Plus } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
-import { UserButton } from "@daveyplate/better-auth-ui";
 import { useSession } from "@/lib/auth-client";
 import {
   Keerthi,
@@ -20,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { handlePostBottle } from "@/actions/postBottle";
+import { UserButton } from "@/components/user-button";
 
 export function PageLayout({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -62,7 +62,6 @@ export function PageLayout({ children }: { children: React.ReactNode }) {
           <nav className="hidden md:flex gap-4 items-center">
             {[
               { href: "/", label: "Home" },
-              { href: "/about", label: "About" },
               { href: "/discover", label: "Discover" },
               { href: "/inbox", label: "Inbox" },
             ].map((item) => (
@@ -126,17 +125,7 @@ export function PageLayout({ children }: { children: React.ReactNode }) {
             </Keerthi>
 
             <ModeToggle />
-            <UserButton
-              size="icon"
-              additionalLinks={[
-                {
-                  href: `/profile/${e.data?.user.username}`,
-                  icon: <UserIcon />,
-                  label: "Profile",
-                  signedIn: true,
-                },
-              ]}
-            />
+            <UserButton />
           </nav>
 
           <button
@@ -224,17 +213,7 @@ export function PageLayout({ children }: { children: React.ReactNode }) {
                 </KeerthiContent>
               </Keerthi>
 
-              <UserButton
-                size="sm"
-                additionalLinks={[
-                  {
-                    href: `/profile/${e.data?.user.username}`,
-                    icon: <UserIcon />,
-                    label: "Profile",
-                    signedIn: true,
-                  },
-                ]}
-              />
+              <UserButton />
               <ModeToggle />
             </div>
           </div>
