@@ -241,14 +241,6 @@ export function PageLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="flex-grow">{children}</div>
-
-        <footer className="mt-8 rounded-2xl bg-white/30 backdrop-blur-md shadow-sm px-6 py-4 flex flex-col md:flex-row items-center justify-between text-sm dark:bg-background">
-          <p className="font-medium">Crafted with 🌊 • Beacon in a Bottle</p>
-          <p className="mt-2 md:mt-0 font-semibold text-slate-700 dark:text-slate-200">
-            Made with <span className="text-pink-600 ">❤️ </span> for{" "}
-            <span className="text-sky-700 dark:text-sky-400">Keerthi</span>
-          </p>
-        </footer>
       </div>
     </main>
   );
