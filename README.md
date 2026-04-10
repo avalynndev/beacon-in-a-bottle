@@ -75,6 +75,5 @@ By following these steps, you can host the Beacon In A Bottle web app on your ow
 
 ## 📝 Notes and Credits
 
-- AI has been used to generate the most of the svg files, and to tweak code things better looking.
-- Files that have been generated using AI have been mentioned in the file iteself.
+- AI hasn't been used for anythin
 - This project was made for the theme "SIGNAL" for Siege hackclub.
