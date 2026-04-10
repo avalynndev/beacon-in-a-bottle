@@ -41,7 +41,8 @@ export const auth = betterAuth({
 
             return {
               id: String(user.id),
-              name: user.github_username ?? user.slack_id ?? String(user.id),
+              name: "",
+              username: user.github_username ?? user.slack_id ?? String(user.id),
               email: user.emails?.[0] ?? null,
               emailVerified: false,
               image: undefined,
