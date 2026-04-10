@@ -59,7 +59,7 @@ export default function SignIn() {
     try {
       await authClient.signIn.oauth2({
         providerId: "hackatime",
-        callbackURL: "/dashboard",
+        callbackURL: "/",
       });
     } catch {
       setError("Failed to connect with Hackatime");
