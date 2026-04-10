@@ -1,5 +1,18 @@
 "use client";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { authClient, useSession } from "@/lib/auth-client";
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -242,5 +255,116 @@ export default function SettingsPage() {
     }
   };
 
-  return <></>;
+  const handleDeleteAccount = async () => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone.",
+    );
+
+    if (!confirmDelete) return;
+
+    const secondConfirm = window.confirm(
+      "This will permanently delete your accoutn and all associated data",
+    );
+
+    if (!secondConfirm) return;
+
+    setDeleteLoading(true);
+
+    try {
+      const { error } = await authClient.deleteUser({
+        fetchOptions: {
+          onSuccess: () => {
+            toast.success("Account deleted successfully");
+            window.location.href = "/";
+          },
+        },
+      });
+      if (error) {
+        throw new Error(error.message);
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete account");
+      console.error(error);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const getAvatarFallBack = () => {
+    if (name) return name.charAt(0).toUpperCase();
+    if (username) return username.charAt(0).toUpperCase();
+    if (email) return email.charAt(0).toUpperCase();
+    return "U";
+  };
+
+  if (isPending) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4">
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session?.user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Please sign in</h1>
+          <Button onClick={() => (window.location.href = "/sign-in")}>
+            Sign In
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-6 max-w-xl mx-auto py-12 px-4">
+      <Card className="pb-0">
+        <CardHeader className="flex flex-row items-start justify-between">
+          <div className="flex-1">
+            <CardTitle>Avatar</CardTitle>
+            <CardDescription className="pt-1">
+              Click on the avatar to upload a custom one from your files.
+            </CardDescription>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              {" "}
+              <Button
+                variant="ghost"
+                className="h-20 w-20 rounded-full p-0"
+                disabled={avatarLoading}
+              >
+                <Avatar className="h-20 w-20 text-2xl">
+                  {avatar ? (
+                    <AvatarImage src={avatar || undefined} />
+                  ) : session?.user?.name || session?.user?.username ? (
+                    <AvatarImage
+                      src={`data:image/svg+xml;base64,${btoa(`
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                      <rect width="32" height="32" fill="#6366f1"/>
+                      <text x="16" y="20" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12" font-weight="bold">
+                        ${(session?.user?.name || session?.user?.username || "").substring(0, 2).toUpperCase()}
+                      </text>
+                    </svg>
+                  `)}`}
+                    />
+                  ) : null}
+                  <AvatarFallback>{getAvatarFallBack()}</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </CardHeader>
+      </Card>
+    </div>
+  );
 }
