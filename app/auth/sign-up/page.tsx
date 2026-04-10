@@ -48,7 +48,7 @@ export default function SignUp() {
         setError(result.error.message || "Sign up failed");
       } else {
         toast.success("Account created successfully! 🎉");
-        router.push("/dashboard");
+        router.push("/");
       }
     } catch {
       setError("An unexpected error occurred");
@@ -63,7 +63,7 @@ export default function SignUp() {
     try {
       await authClient.signIn.oauth2({
         providerId: "hackatime",
-        callbackURL: "/dashboard",
+        callbackURL: "/",
       });
     } catch {
       setError("Failed to connect with Hackatime");
