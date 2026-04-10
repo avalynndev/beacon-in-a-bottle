@@ -1,21 +1,28 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, useRef } from "react";
+import { useSession } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 import {
   Card,
+  CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { authClient, useSession } from "@/lib/auth-client";
-import React, { useState, useEffect, useRef } from "react";
-import { toast } from "sonner";
+import { Laptop, EyeOff, Eye, Upload, Trash2, Loader2 } from "lucide-react";
 
 export default function SettingsPage() {
   const { data: session, isPending } = useSession();
@@ -49,6 +56,7 @@ export default function SettingsPage() {
     e.preventDefault();
     if (!name.trim() || name.length > 32) {
       toast.error("Name must be between 1 and 32 characters");
+      return;
     }
 
     setNameLoading(true);
@@ -60,6 +68,8 @@ export default function SettingsPage() {
       if (error) {
         throw new Error(error.message);
       }
+
+      toast.success("Name updated successfully");
     } catch (error: any) {
       toast.error(error.message || "Failed to update name");
       console.error(error);
@@ -181,7 +191,7 @@ export default function SettingsPage() {
       return;
     }
 
-    const maxSize = 5 * 1024 * 1024; //5 MB
+    const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
       toast.error("Image size should be less than 5MB");
       return;
@@ -246,6 +256,7 @@ export default function SettingsPage() {
           },
         },
       });
+
       if (error) {
         throw new Error(error.message);
       }
@@ -263,13 +274,12 @@ export default function SettingsPage() {
     if (!confirmDelete) return;
 
     const secondConfirm = window.confirm(
-      "This will permanently delete your accoutn and all associated data",
+      "This will permanently delete your account and all associated data",
     );
 
     if (!secondConfirm) return;
 
     setDeleteLoading(true);
-
     try {
       const { error } = await authClient.deleteUser({
         fetchOptions: {
@@ -279,6 +289,7 @@ export default function SettingsPage() {
           },
         },
       });
+
       if (error) {
         throw new Error(error.message);
       }
@@ -290,7 +301,7 @@ export default function SettingsPage() {
     }
   };
 
-  const getAvatarFallBack = () => {
+  const getAvatarFallback = () => {
     if (name) return name.charAt(0).toUpperCase();
     if (username) return username.charAt(0).toUpperCase();
     if (email) return email.charAt(0).toUpperCase();
@@ -301,9 +312,8 @@ export default function SettingsPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4">
-            <p className="text-muted-foreground">Loading...</p>
-          </div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -334,7 +344,6 @@ export default function SettingsPage() {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              {" "}
               <Button
                 variant="ghost"
                 className="h-20 w-20 rounded-full p-0"
@@ -355,15 +364,267 @@ export default function SettingsPage() {
                   `)}`}
                     />
                   ) : null}
-                  <AvatarFallback>{getAvatarFallBack()}</AvatarFallback>
+                  <AvatarFallback>{getAvatarFallback()}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              
+              <DropdownMenuItem
+                onClick={() => fileInputRef.current?.click()}
+                className="cursor-pointer"
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                {avatar ? "Replace Avatar" : "Upload Avatar"}
+              </DropdownMenuItem>
+              {avatar && (
+                <DropdownMenuItem
+                  onClick={handleAvatarRemove}
+                  className="cursor-pointer text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Remove Avatar
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </CardHeader>
+        <CardFooter className="border-t bg-sidebar rounded-b-xl p-5 ">
+          <CardDescription>
+            An avatar is optional but strongly recommended.
+          </CardDescription>
+        </CardFooter>
+      </Card>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+
+      <form onSubmit={handleNameUpdate}>
+        <Card className="pb-0">
+          <CardHeader>
+            <CardTitle>Name</CardTitle>
+            <CardDescription>
+              Please enter your full name, or a display name.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Input
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={32}
+              required
+            />
+          </CardContent>
+          <CardFooter className="border-t bg-sidebar rounded-b-xl p-4">
+            <CardDescription>
+              Please use 32 characters at maximum.
+            </CardDescription>
+            <Button
+              type="submit"
+              className="ml-auto"
+              disabled={nameLoading || !name.trim()}
+            >
+              {nameLoading && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+              {nameLoading ? "Saving..." : "Save"}
+            </Button>
+          </CardFooter>
+        </Card>
+      </form>
+
+      <form onSubmit={handleUsernameUpdate}>
+        <Card className="pb-0">
+          <CardHeader>
+            <CardTitle>Username</CardTitle>
+            <CardDescription>
+              Enter the username you want to use to log in.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Input
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              maxLength={32}
+              required
+            />
+          </CardContent>
+          <CardFooter className="border-t bg-sidebar rounded-b-xl p-4">
+            <CardDescription>
+              Please use 32 characters at maximum.
+            </CardDescription>
+            <Button
+              type="submit"
+              className="ml-auto"
+              disabled={usernameLoading || !username.trim()}
+            >
+              {usernameLoading && (
+                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+              )}
+              {usernameLoading ? "Saving..." : "Save"}
+            </Button>
+          </CardFooter>
+        </Card>
+      </form>
+
+      <form onSubmit={handleEmailUpdate}>
+        <Card className="pb-0">
+          <CardHeader>
+            <CardTitle>Email</CardTitle>
+            <CardDescription>
+              Enter the new email address you want to use.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Input
+              type="email"
+              placeholder="m@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </CardContent>
+          <CardFooter className="border-t bg-sidebar rounded-b-xl p-4">
+            <CardDescription>
+              Please enter a valid email address.
+            </CardDescription>
+            <Button
+              type="submit"
+              className="ml-auto"
+              disabled={emailLoading || !email.trim()}
+            >
+              {emailLoading && (
+                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+              )}
+              {emailLoading ? "Saving..." : "Save"}
+            </Button>
+          </CardFooter>
+        </Card>
+      </form>
+
+      <form onSubmit={handlePasswordUpdate}>
+        <Card className="pb-0">
+          <CardHeader>
+            <CardTitle>Change Password</CardTitle>
+            <CardDescription>
+              Enter your current password and a new password.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6">
+            <div className="grid gap-2">
+              <Label htmlFor="currentPassword">Current Password</Label>
+              <Input
+                id="currentPassword"
+                type="password"
+                placeholder="Current Password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="newPassword">New Password</Label>
+              <div className="relative">
+                <Input
+                  id="newPassword"
+                  type={showNewPassword ? "text" : "password"}
+                  placeholder="New Password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  autoComplete="new-password"
+                  className="pr-10"
+                  minLength={8}
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                >
+                  {showNewPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="border-t bg-sidebar rounded-b-xl p-4">
+            <CardDescription>
+              Please use 8 character at minimum.
+            </CardDescription>
+            <Button
+              type="submit"
+              className="ml-auto"
+              disabled={passwordLoading || !currentPassword || !newPassword}
+            >
+              {passwordLoading && (
+                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+              )}
+              {passwordLoading ? "Saving..." : "Save"}
+            </Button>
+          </CardFooter>
+        </Card>
+      </form>
+
+      <Card className="pb-0">
+        <CardHeader>
+          <CardTitle>Sessions</CardTitle>
+          <CardDescription>
+            Manage your active sesssion and revoke access.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="flex items-center gap-3 rounded-xl border p-3">
+            <Laptop className="h-4 w-4" />
+            <div className="flex flex-col">
+              <span className="font-semibold text-sm">Current Session</span>
+              <span className="text-muted-foreground text-xs">
+                {typeof navigator !== "undefined"
+                  ? `${navigator.platform}, ${navigator.userAgent.includes("Chrome") ? "Chrome" : "Browser"}`
+                  : "Browser"}
+              </span>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-auto"
+              onClick={handleSignOut}
+            >
+              Sign Out
+            </Button>
+          </div>
+        </CardContent>
+        <CardFooter className="bg-sidebar" />
+      </Card>
+
+      <Card className="border-destructive/40 pb-0">
+        <CardHeader>
+          <CardTitle>Delete Account</CardTitle>
+          <CardDescription>
+            Permanently remove your account and all of its contents. This action
+            is not reversible, so please continue with caution.
+          </CardDescription>
+        </CardHeader>
+        <CardFooter className="border-t border-destructive/30 bg-destructive/15 rounded-b-xl p-4">
+          <Button
+            variant="destructive"
+            className="ml-auto"
+            onClick={handleDeleteAccount}
+            disabled={deleteLoading}
+          >
+            {deleteLoading && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+            {deleteLoading ? "Deleting..." : "Delete Account"}
+          </Button>
+        </CardFooter>
       </Card>
     </div>
   );
