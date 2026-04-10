@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signUp } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +28,7 @@ export default function SignUp() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -34,45 +36,48 @@ export default function SignUp() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-
     try {
       const { username, email, password } = formData;
-
       const result = await signUp.email({
         email,
         password,
         username,
         name: "",
       });
-
       if (result.error) {
         setError(result.error.message || "Sign up failed");
       } else {
         toast.success("Account created successfully! 🎉");
         router.push("/dashboard");
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
-      console.error("Sign up error:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleHackatimeSignUp = async () => {
+    setOauthLoading(true);
+    setError("");
+    try {
+      await authClient.signIn.oauth2({
+        providerId: "hackatime",
+        callbackURL: "/dashboard",
+      });
+    } catch {
+      setError("Failed to connect with Hackatime");
+      setOauthLoading(false);
+    }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
-    <main className="flex  items-center justify-center p-4">
+    <main className="flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Card className="w-full max-w-sm">
           <CardHeader className="grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5">
@@ -82,6 +87,28 @@ export default function SignUp() {
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6">
+            {/* Hackatime OAuth */}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleHackatimeSignUp}
+              disabled={oauthLoading || isLoading}
+            >
+              {oauthLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <span className="mr-2">⏱</span>
+              )}
+              Continue with Hackatime
+            </Button>
+
+            <div className="relative flex items-center gap-2">
+              <div className="flex-1 border-t" />
+              <span className="text-xs text-muted-foreground">or</span>
+              <div className="flex-1 border-t" />
+            </div>
+
             <div className="grid gap-4">
               <form onSubmit={handleSubmit} className="grid w-full gap-6">
                 <div className="grid gap-2">
@@ -97,7 +124,6 @@ export default function SignUp() {
                     disabled={isLoading}
                   />
                 </div>
-
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -111,7 +137,6 @@ export default function SignUp() {
                     disabled={isLoading}
                   />
                 </div>
-
                 <div className="grid gap-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
@@ -132,13 +157,13 @@ export default function SignUp() {
                       variant="ghost"
                       size="sm"
                       className="absolute top-0 right-0 h-9 w-9 !bg-transparent hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50"
-                      onClick={togglePasswordVisibility}
+                      onClick={() => setShowPassword(!showPassword)}
                       disabled={isLoading}
                     >
                       {showPassword ? (
-                        <Eye className="h-4 w-4" aria-hidden="true" />
+                        <Eye className="h-4 w-4" />
                       ) : (
-                        <EyeOff className="h-4 w-4" aria-hidden="true" />
+                        <EyeOff className="h-4 w-4" />
                       )}
                     </Button>
                     <style jsx>{`
@@ -158,7 +183,11 @@ export default function SignUp() {
                   </Alert>
                 )}
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoading || oauthLoading}
+                >
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
