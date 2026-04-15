@@ -44,9 +44,40 @@ export function Bottle({
         z-900
       "
     >
-      <div className="w-full h-full flex items-center justify-center text-sm font-medium ">
-        Message
-      </div>
+      <svg viewBox="0 0 100 200" className="w-full h-full">
+        <rect
+          x="42"
+          y="5"
+          width="16"
+          height="10"
+          rx="2"
+          className="fill-gray-400"
+        />
+        <rect
+          x="42"
+          y="15"
+          width="16"
+          height="30"
+          rx="2"
+          className="fill-gray-300"
+        />
+        <rect
+          x="25"
+          y="43"
+          width="50"
+          height="130"
+          rx="10"
+          className="fill-gray-200"
+        />
+        <rect
+          x="30"
+          y="55"
+          width="40"
+          height="70"
+          rx="8"
+          className="fill-gray-300"
+        />
+      </svg>
     </button>
   );
 }
