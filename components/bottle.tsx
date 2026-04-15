@@ -28,20 +28,7 @@ export function Bottle({
       aria-label="Click to open message"
       style={style}
       className="
-        w-28 h-16
-        rounded-xl
-        bg-blue-100
-        border-2 border-blue-400
-        shadow-lg
-        cursor-pointer
-        hover:opacity-80
-        transition-opacity
-        focus:outline-none
-        focus-visible:ring-2
-        focus-visible:ring-blue-400
-        focus-visible:ring-offset-2
-        select-none
-        z-900
+          absolute cursor-pointer select-none z-50
       "
     >
       <svg viewBox="0 0 100 200" className="w-full h-full">
