@@ -27,7 +27,7 @@ export function Bottle({
       onClick={onBottleClick}
       aria-label="Click to open message"
       style={style}
-      className="w-28 h-16 absolute cursor-pointer select-none z-50"
+      className="w-56 h-32 absolute cursor-pointer select-none z-50"
     >
       <svg viewBox="0 0 100 200" className="w-full h-full">
         <rect
